@@ -24,6 +24,7 @@ Steps:
 3. Review against `.claude/skills/code-review/references/review-checklist.md`,
    weighting the categories that match the change.
 4. Rank findings with `.claude/skills/code-review/references/severity-rubric.md`
-   and report most-severe first. Each finding: **file:line**, the defect in one
-   line, and a concrete failure scenario. Suggest fixes; don't edit files unless
-   asked. If the diff is clean, say so plainly.
+   and report most-severe first. Each finding: **file:line**, its **severity
+   level** (per the rubric), the defect in one line, and a concrete failure
+   scenario. Suggest fixes; don't edit files unless asked. If the diff is clean,
+   say so plainly.

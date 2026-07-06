@@ -30,9 +30,12 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 - Deadlock / lock-ordering; check-then-act (TOCTOU) races.
 
 ## Data & API contracts
-- Breaking change to a public signature, response shape, or DB schema.
+- Breaking change to a public signature, response shape, or DB schema — grep its
+  call sites/consumers and confirm they still hold under the new contract.
 - Backward/forward compatibility for persisted data and serialized formats.
 - Migration present and reversible when the schema changes.
+- Destructive or irreversible operation with no scoping predicate: DELETE/UPDATE/DROP/TRUNCATE (or equivalent ORM/file/cache call) with no filter, the wrong filter, or a filter that can evaluate to "match everything."
+- Migration or code path that drops/renames/overwrites a column, table, key, or file that is still read elsewhere in the codebase.
 - N+1 queries, unbounded result sets, missing pagination or index.
 
 ## Performance (only when plausibly hot)

@@ -47,6 +47,16 @@ changes. A hunk in isolation hides its callers, its invariants, and whether an
 edge case is handled elsewhere. Most false-positive review comments come from
 judging a hunk without reading the function it lives in.
 
+When a change alters a function or method's signature, return value/type,
+nullability, units, thrown/rejected errors, or side effects, Grep for its call
+sites and read the ones that still use the old contract — an unchanged caller
+relying on it is a bug the diff introduced, not a pre-existing issue (see
+severity-rubric.md's "materially worse" carve-out), and belongs in the review at
+full severity. If the symbol is used pervasively (a core utility, a
+widely-implemented interface), sample a representative few callers across
+different modules rather than reading every occurrence — the goal is to catch the
+realistic break, not to audit the whole codebase.
+
 ## 3. What to look for
 
 Work through `references/review-checklist.md` — correctness, security, error
@@ -55,15 +65,24 @@ on the **changed lines and what they touch**; do not review the whole codebase.
 
 Weight toward the categories that match the change: a SQL query → injection and
 N+1; an auth path → access control; a parser → malformed input; a refactor →
-behavior preservation.
+behavior preservation; shared state or async code → races and unawaited work; a
+webhook/retry/payment path → idempotency and double-processing; a delete or
+migration → data loss and reversibility; a token/password/hash → crypto misuse.
+The last four rarely look wrong in the hunk itself — check them deliberately
+against how the code runs, not just by reading the diff.
 
 ## 4. Rank and report
 
 Score each finding with `references/severity-rubric.md` and report most-severe
-first. For every finding give: **file:line**, a one-line statement of the
-defect, and a concrete failure scenario (input/state → wrong result). Prefer
-one solid example over a hand-wave. Only claim something is a bug if you can
-name how it breaks; otherwise mark it as a question or a nit.
+first. For every finding give: **file:line**, its **severity level** (from
+`references/severity-rubric.md`: Critical / High / Medium / Low-Nit / Question),
+a one-line statement of the defect, and a concrete failure scenario (input/state
+→ wrong result). Prefer one solid example over a hand-wave. Only claim something
+is a confirmed bug if you can name how it breaks. If you can't confirm it and it
+has no behavioral impact, it's a nit. If you can't confirm it but it could be a
+real security, data-loss, concurrency, or crash bug, raise it as a Question at
+the severity it would carry if true — don't downgrade an unconfirmed suspicion to
+a nit just because you can't fully prove it.
 
 Suggest fixes, but do not edit files unless the user asked you to apply changes.
 
@@ -78,6 +97,12 @@ of a good diff is a success, not a failure.
   "missing code" — it may have simply moved.
 - **Generated / vendored / lockfiles** (`dist/`, `*.min.js`, `package-lock.json`,
   `go.sum`, `vendor/`) are noise. Note them, don't line-review them.
+- **Binary files** (images, `.so`/`.jar`/`.wasm`, PDFs, other compiled assets)
+  show in the stat as `Bin N -> M bytes` and in the diff as "Binary files ...
+  differ" — their contents aren't in the diff and can't be line-reviewed. Don't
+  pad the review with them. Do raise a finding only when a binary doesn't fit the
+  change — e.g., an executable or shared library added in a docs- or config-only
+  PR — which can be a supply-chain risk worth a manual/provenance check.
 - **Whitespace-only and formatting-only hunks** rarely warrant a comment; don't
   pad the review with them.
 - **Respect the diff's scope.** Pre-existing issues outside the changed lines
