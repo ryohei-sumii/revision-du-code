@@ -19,6 +19,8 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 
 ## Security
 - Untrusted input reaching a sink: SQL/OS command/template/eval injection.
+- Untrusted input concatenated/interpolated/formatted INTO a query, command, path, or template string — the actual injection sink.
+- A value already passed as a bound parameter (`?`/`$1`/named placeholder) is NOT an injection sink — do not flag it as SQLi/command-injection regardless of missing type validation. A crash from bad type/format (e.g. non-numeric `limit` raising ValueError) is at most a Low nit.
 - Missing authentication or authorization on a new endpoint/action.
 - Secrets, tokens, or keys hard-coded or logged.
 - Path traversal, SSRF, unsafe deserialization, XSS in rendered output.
@@ -36,7 +38,7 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 - Migration present and reversible when the schema changes.
 - Destructive or irreversible operation with no scoping predicate: DELETE/UPDATE/DROP/TRUNCATE (or equivalent ORM/file/cache call) with no filter, the wrong filter, or a filter that can evaluate to "match everything."
 - Migration or code path that drops/renames/overwrites a column, table, key, or file that is still read elsewhere in the codebase.
-- N+1 queries, unbounded result sets, missing pagination or index.
+- N+1 queries, unbounded result sets, missing pagination or index — including a bound parameter whose *value* is unchecked and could be arbitrarily large/negative (e.g. `LIMIT ?` fed an unvalidated huge or negative number) — that is a resource-exhaustion/Medium finding on its own axis, independent of the injection question.
 
 ## Performance (only when plausibly hot)
 - Accidental quadratic loops; work inside a loop that belongs outside it.
