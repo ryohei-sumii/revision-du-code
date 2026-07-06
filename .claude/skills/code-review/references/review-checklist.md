@@ -1,0 +1,52 @@
+# Review checklist
+
+Language-agnostic. Apply the categories that fit the change; skip the ones that
+don't. Depth beats breadth — a real bug found is worth more than ticking boxes.
+
+## Correctness
+- Off-by-one, boundary, and empty-collection cases (0, 1, N, max).
+- Null / nil / undefined / None handling; unwrapping something that can be absent.
+- Wrong operator or inverted condition (`&&` vs `||`, `<` vs `<=`, `!`).
+- Type coercion / truthiness surprises; integer vs float division; overflow.
+- Return value ignored, or the wrong value returned on an early exit.
+- Does the change actually do what its name/commit message claims?
+
+## Control flow & errors
+- Errors swallowed, logged-and-continued, or turned into a wrong default.
+- Resources not released on the error path (files, locks, connections, handles).
+- Partial state left behind when an operation fails midway (no rollback).
+- `try/catch` too broad, hiding failures it shouldn't.
+
+## Security
+- Untrusted input reaching a sink: SQL/OS command/template/eval injection.
+- Missing authentication or authorization on a new endpoint/action.
+- Secrets, tokens, or keys hard-coded or logged.
+- Path traversal, SSRF, unsafe deserialization, XSS in rendered output.
+- Weak/missing input validation on data that crosses a trust boundary.
+
+## Concurrency & state
+- Shared mutable state without synchronization; race conditions.
+- `await`/promise not awaited; unhandled rejection; fire-and-forget that matters.
+- Deadlock / lock-ordering; check-then-act (TOCTOU) races.
+
+## Data & API contracts
+- Breaking change to a public signature, response shape, or DB schema.
+- Backward/forward compatibility for persisted data and serialized formats.
+- Migration present and reversible when the schema changes.
+- N+1 queries, unbounded result sets, missing pagination or index.
+
+## Performance (only when plausibly hot)
+- Accidental quadratic loops; work inside a loop that belongs outside it.
+- Repeated recomputation that could be hoisted or cached.
+- Large allocations / reads with no streaming or limit.
+
+## Tests
+- New behavior and the bug being fixed are covered by a test.
+- Edge cases from the "Correctness" section are tested, not just the happy path.
+- Tests assert real outcomes, not tautologies or mocked-away logic.
+
+## Maintainability (keep brief — nits, not blockers)
+- Dead code, unused variables/imports, leftover debug prints or TODOs.
+- Duplication that already exists elsewhere and could be reused.
+- Names that mislead; a comment that now contradicts the code.
+- Needless complexity where a simpler form is equivalent.
