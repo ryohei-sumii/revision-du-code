@@ -24,7 +24,11 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 - Missing authentication or authorization on a new endpoint/action.
 - Secrets, tokens, or keys hard-coded or logged.
 - Path traversal, SSRF, unsafe deserialization, XSS in rendered output.
-- Weak/missing input validation on data that crosses a trust boundary.
+- Weak/missing input validation on data that crosses a trust boundary. For a validation/allowlist/sanitizer regex, name the exact input that wrongly passes or is wrongly let through:
+  - **Anchoring** — a validation/allowlist regex without full anchors (`^...$` / `\A...\z`) matches a substring, so `https://evil.com/?u=trusted.com` or an embedded token passes a host/URL/redirect check. Confirm anchoring on URL/redirect/allowlist validators.
+  - **No-op sanitization** — a strip/replace whose pattern doesn't actually match the target codepoints (wrong escape, missing global/multiline flag, ASCII-only class vs. a unicode char like soft hyphen U+00AD or zero-width space) silently passes the input through unchanged. Verify the pattern hits the exact chars it claims to strip.
+  - **Over-permissive matching** — `.*`, an over-broad character class, or no length bound admits invalid or overlong input the validator is supposed to reject.
+- Catastrophic backtracking (ReDoS): flag only when BOTH hold — (a) a quantifier wraps a group that itself contains a quantifier or overlapping alternation able to match the same substring more than one way (ambiguous partition — e.g. `(a+)+$`, `(a*)*`, `(a|aa)+`, `(\w+\s?)*$`) AND a required trailing/anchored token the input can fail; AND (b) you exhibit a concrete input that forces super-linear steps. A nested quantifier alone (e.g. `([\w.%+\-]+)+`) is NOT sufficient — a character class with no internal ambiguity cannot blow up. If you cannot construct the pathological input, it is not a confirmed ReDoS: raise it at most as a Question, never Critical/High. Engine mitigation is a SECONDARY, opt-in check: if you can identify the concrete runtime engine and it is non-backtracking or backtrack-limited (RE2, Rust regex, Go `regexp`, .NET with a timeout), downgrade accordingly — but do NOT assume mitigation for an unknown engine, since default PCRE/JS/Python/Java engines all backtrack.
 
 ## Concurrency & state
 - Shared mutable state without synchronization; race conditions.
