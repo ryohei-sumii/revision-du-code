@@ -72,7 +72,12 @@ already used:
   function and the code that spawns, bounds, or awaits the work — unbounded
   fan-out, missing timeouts, unawaited work, and races are invisible in the hunk
   itself and rank at the top of the severity scale, so never let the read budget
-  skip them.
+  skip them. To catch fire-and-forget, read the **definition of any called
+  function whose result is dropped** before concluding the call is synchronous — a
+  call that returns a promise/future/handle but is discarded is unawaited work, not
+  a self-contained line. These override reads are **in addition to** the budget,
+  not drawn from it: "skip self-contained hunks" must never talk you out of reading
+  the spawn/bound/await/callee code.
 
 ## 3. What to look for
 
