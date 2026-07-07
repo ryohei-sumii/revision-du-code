@@ -53,8 +53,10 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 - Large allocations / reads with no streaming or limit.
 
 ## Tests
-- New behavior and the bug being fixed are covered by a test.
-- Edge cases from the "Correctness" section are tested, not just the happy path.
+- When you find a concrete bug, check whether a test would have caught it and note
+  the coverage gap alongside the bug — the finding is the bug, not the missing test.
+- Absence of a test is not itself a finding; don't report "no test for this" on its
+  own (see severity-rubric.md's test rule of thumb).
 - Tests assert real outcomes, not tautologies or mocked-away logic.
 
 ## Maintainability (keep brief — nits, not blockers)

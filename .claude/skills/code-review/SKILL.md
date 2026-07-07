@@ -84,15 +84,33 @@ real security, data-loss, concurrency, or crash bug, raise it as a Question at
 the severity it would carry if true — don't downgrade an unconfirmed suspicion to
 a nit just because you can't fully prove it.
 
-The converse also holds: don't assert a defect you cannot see. For a suspected
-missing authentication/authorization or IDOR, first Grep for the guard layer —
-route decorators, middleware, a shared auth wrapper — since these usually live
-outside the hunk; absence from the diff is not absence from the codebase. If you
-find the guard, drop the concern. If you searched and the route is genuinely
-unprotected, flag it at full severity. Only when you cannot confirm either way,
-raise it as a Question ("Is this route covered by the auth middleware? If not,
-this is an IDOR — attacker passes another customer's id and reads their orders")
-at the severity it would carry if true — not as a definite High.
+The converse also holds: don't assert a defect you cannot see. This applies to
+**any** claim that depends on the behavior of referenced-but-unshown code — a
+validator's internals, a type/interface definition, an imported symbol or file, or
+a guard layer (route decorators, middleware, a shared auth wrapper). The primary
+action is **READ, not downgrade**: if the referenced code exists in the repo,
+Read/Grep it before asserting how it behaves — reading either confirms the defect
+(assert at full severity) or refutes it (drop). Two concrete patterns that fail
+this way:
+- Claiming a validator rejects an omitted/`undefined` field — e.g. that a PATCH
+  field just became required — without having read that validator. Read it first;
+  it may treat the field as optional.
+- Flagging an import, type, or file that is absent from a partial diff as a
+  compile-time break without Grepping for it. It may exist unchanged outside the
+  diff.
+- For missing auth/IDOR: Grep for the guard layer — absence from the diff is not
+  absence from the codebase. If you find the guard, drop the concern; if you
+  searched and the route is genuinely unprotected, flag at full severity.
+
+Only when the code is **genuinely absent AND not readable** do you fall back to
+raising it as a Question, at the severity it would carry if true ("Is this route
+covered by the auth middleware? If not, this is an IDOR — attacker passes another
+customer's id and reads their orders") — not as a definite High. **Exception:**
+where the defect follows from well-established language/runtime semantics — e.g. a
+newly-added struct field defaulting to its zero value and thereby changing runtime
+behavior at an unshown call site — you may assert it at full severity without
+reading the external caller. Don't over-hedge that zero-value case into a Question;
+the semantics are known, so it is a confirmed finding.
 
 Suggest fixes, but do not edit files unless the user asked you to apply changes.
 

@@ -7,7 +7,7 @@ levels, pick the lower one and say why — over-flagging erodes trust in the rev
 |-------|---------|----------|
 | **Critical** | Data loss, security hole, or crash reachable in normal use. Must fix before merge. | SQL injection, auth bypass, secret committed, null-deref on a common path, corruption on the happy path. |
 | **High** | Wrong behavior for a realistic input, or a resource/consistency leak. Should fix before merge. | Off-by-one dropping the last item, error swallowed so a failure looks like success, lock not released, missing rollback. |
-| **Medium** | Bug on an edge case, missing test for new behavior, or a contract risk. Fix soon. | Unhandled empty input, N+1 query, breaking API change without a version bump, missing migration reversibility. |
+| **Medium** | Bug on an edge case or a contract risk. Fix soon. | Unhandled empty input, N+1 query, breaking API change without a version bump, missing migration reversibility. |
 | **Low / Nit** | Maintainability only; no behavior impact. Optional. | Dead code, misleading name, duplication, stale comment, needless complexity. |
 | **Question** | You suspect an issue but can't confirm it from the diff. | "Can `items` be empty here? If so line X divides by zero." |
 
@@ -26,6 +26,12 @@ Rules of thumb:
   when the OOM can take down a shared worker or an attacker can trigger it on demand.
   The Medium resource guidance covers bounded-but-large or unvalidated-parameter loads,
   not loads with no upper bound at all.
+- A bare observation that a change ships with no tests, or that new behavior lacks a
+  dedicated test, is not on its own a reportable defect — at most a one-line Low or Nit
+  aside. File a test-related finding at Medium-or-above only when you can name BOTH the
+  specific untested path AND the concrete bug it lets through; in that case report the
+  underlying bug at its own severity (Critical, High, or Medium as the bug itself
+  warrants), not as a "missing test."
 - Pre-existing issues outside the diff are capped at **Low** unless the change
   makes them materially worse. Score the underlying defect at its *true, full
   severity* — not Low — in either of these cases:
