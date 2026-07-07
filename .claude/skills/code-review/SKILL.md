@@ -102,6 +102,23 @@ this way:
   absence from the codebase. If you find the guard, drop the concern; if you
   searched and the route is genuinely unprotected, flag at full severity.
 
+A precondition or invariant the code states or documents — a parameter documented
+as lying in `[0,1]`, an internally-enforced contract — is a GIVEN, not a hole: do
+not manufacture a bug by inventing a caller input that violates it. Missing
+validation is a finding only where the input crosses a trust boundary
+(untrusted/external); an internally-constrained parameter whose contract the diff
+states is not. Do not rest a finding on an external fact you cannot substantiate
+from the diff or repo — a specific DB driver's transaction/abort semantics,
+whether a changed parameter is a public/documented API, or similar
+deployment-specific unknowns — for these genuinely bimodal facts, either drop the
+finding or raise it as a Question at the severity it would carry if true. But when
+the assumed fact instead contradicts the current, well-established default of a
+language or runtime (e.g. Go has auto-seeded the global `math/rand` source since
+1.20, now the overwhelmingly common case) rather than being genuinely unknown,
+assume the current default holds and drop the finding outright — do not hedge it
+as a Question — unless the diff or repo shows concrete evidence of an older target
+(a pinned legacy version, an old `go.mod`/lockfile entry).
+
 Only when the code is **genuinely absent AND not readable** do you fall back to
 raising it as a Question, at the severity it would carry if true ("Is this route
 covered by the auth middleware? If not, this is an IDOR — attacker passes another
