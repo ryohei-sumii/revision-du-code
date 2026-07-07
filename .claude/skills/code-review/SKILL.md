@@ -43,41 +43,34 @@ changes, tell the user and stop — there is nothing to review.
 ## 2. Understand before judging
 
 Read the diff, then **open surrounding code where it changes your verdict** — not
-every touched file. Budget roughly **3-4 surrounding-file reads per review**, spent
-on the hunks whose correctness you cannot judge in isolation: a hunk hides its
-callers, its invariants, and whether an edge case is handled elsewhere, and most
-false-positive comments come from judging a hunk without reading the function it
-lives in. Skip the surrounding read for self-contained changes (formatting, local
-refactors, additions with no external contract) — spend the budget where a missed
-read would let a real defect through, not to audit clean hunks.
+every touched file. Budget your surrounding reads: spend them on the hunks whose
+correctness you cannot judge in isolation, and read a caller, guard, or callee
+whenever the change's correctness depends on it. A hunk hides its callers, its
+invariants, and whether an edge case is handled elsewhere — most false-positive
+comments come from judging a hunk without reading the function it lives in. Skip
+the surrounding read for self-contained changes (formatting, local refactors,
+additions with no external contract); spend it where a missed read would let a real
+defect through, not to audit clean hunks.
 
-Two cases **override the budget** — always spend the read, however many you have
-already used:
+The reads most likely to decide a verdict are **contract, signature, or guard
+changes** and **concurrency or shared state**:
 
-- **Contract / signature / guard changes.** When a change alters a function or
-  method's signature, return value/type, nullability, units, thrown/rejected
-  errors, or side effects, Grep for its call sites and read the ones that still use
-  the old contract — an unchanged caller relying on it is a bug the diff
-  introduced, not a pre-existing issue (see severity-rubric.md's "materially worse"
-  carve-out), and belongs in the review at full severity. Likewise, for a suspected
-  missing auth/IDOR or removed guard, Grep for the guard layer before asserting —
-  absence from the diff is not absence from the codebase. If the symbol is used
-  pervasively (a core utility, a widely-implemented interface), sample a
-  representative few callers across different modules rather than reading every
-  occurrence — the goal is to catch the realistic break, not to audit the whole
-  codebase.
+- For a changed signature, return value/type, nullability, units, thrown/rejected
+  errors, or side effects, Grep the call sites still using the old contract — a
+  caller the diff breaks is a bug the diff *introduced*, not a pre-existing issue
+  (see severity-rubric.md's "materially worse" carve-out), and belongs in the review
+  at full severity. For a suspected missing auth/IDOR or removed guard, Grep the
+  guard layer before asserting — absence from the diff is not absence from the
+  codebase. If the symbol is used pervasively, sample a representative few callers
+  rather than every occurrence.
+- For concurrency, read the enclosing function and the code that spawns, bounds, or
+  awaits the work — including the definition of any called function whose result is
+  dropped, since a discarded promise/future/handle is unawaited work, not a
+  self-contained line.
 
-- **Concurrency / shared state.** When a change touches goroutines/threads,
-  async/await, locking, channels, or shared mutable state, read the enclosing
-  function and the code that spawns, bounds, or awaits the work — unbounded
-  fan-out, missing timeouts, unawaited work, and races are invisible in the hunk
-  itself and rank at the top of the severity scale, so never let the read budget
-  skip them. To catch fire-and-forget, read the **definition of any called
-  function whose result is dropped** before concluding the call is synchronous — a
-  call that returns a promise/future/handle but is discarded is unawaited work, not
-  a self-contained line. These override reads are **in addition to** the budget,
-  not drawn from it: "skip self-contained hunks" must never talk you out of reading
-  the spawn/bound/await/callee code.
+Races, missing timeouts, unbounded fan-out, and broken contracts rank at the top of
+the severity scale and are invisible in the hunk itself, so treat these as the
+default place to spend your budget.
 
 ## 3. What to look for
 
