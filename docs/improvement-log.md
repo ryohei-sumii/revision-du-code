@@ -457,18 +457,6 @@ diagnose(Opus)は「妥当な設計判断を欠陥報告しない」carve-out �
 - 新しいバグクラス(例: 特定言語・フレームワーク固有)の要求が来たとき。
 - いずれも本ファイルの `Round N` 形式で追記し、`docs/rounds/` に生データを残す。
 
-### 現場適用ログ / Field tests
-
-収束後、実リポジトリにスキルを当てた記録。合成フィクスチャでなく外部の実コードでの検証。
-
-- **Field #1 — `modulith-virtual-thread-sample`(Java/Spring Modulith/Virtual Threads)**:
-  `docs/rounds/field-review-01-modulith-vt.md`。初見の Java リポジトリで実バグ2件(在庫予約の
-  ロック欠如=Critical、`@Async` private 自己呼び出しの no-op=High)を検出。主な学び:
-  ①**言語非依存が現場で検証**(改善は主に汎用/Go/Python 題材だったが Java で通用)②鍛えた concurrency 軸と
-  「見えないコードは grep」習慣が決め手 ③磨いた precision 規律が HikariCP 200 等の**誤報を実コードでも防いだ**
-  ④`@Async` no-op は**フレームワーク知識**(モデル側)が要る=「スキル=方法論 × モデル=知識」の両輪
-  ⑤全体レビューでは**明示的な優先順位付けと正直なスコープ宣言**が要る。
-
 ---
 
 ## 4. 用語ミニ辞典 / Glossary
