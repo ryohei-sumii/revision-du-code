@@ -21,6 +21,11 @@ Rules of thumb:
   including ones you can only raise as a Question. Rank a Question about a potential
   Critical/High issue alongside the confirmed findings of that tier, not at the bottom
   with nits.
+- A result set materialized fully into memory with no ceiling (no LIMIT, no pagination,
+  no streaming) is not a Medium like an N+1 — it is at least **High**, and **Critical**
+  when the OOM can take down a shared worker or an attacker can trigger it on demand.
+  The Medium resource guidance covers bounded-but-large or unvalidated-parameter loads,
+  not loads with no upper bound at all.
 - Pre-existing issues outside the diff are capped at **Low** unless the change
   makes them materially worse. Score the underlying defect at its *true, full
   severity* — not Low — in either of these cases:

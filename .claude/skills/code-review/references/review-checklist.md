@@ -38,7 +38,10 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 - Migration present and reversible when the schema changes.
 - Destructive or irreversible operation with no scoping predicate: DELETE/UPDATE/DROP/TRUNCATE (or equivalent ORM/file/cache call) with no filter, the wrong filter, or a filter that can evaluate to "match everything."
 - Migration or code path that drops/renames/overwrites a column, table, key, or file that is still read elsewhere in the codebase.
-- N+1 queries, unbounded result sets, missing pagination or index — including a bound parameter whose *value* is unchecked and could be arbitrarily large/negative (e.g. `LIMIT ?` fed an unvalidated huge or negative number) — that is a resource-exhaustion/Medium finding on its own axis, independent of the injection question.
+- N+1 queries, unbounded result sets, missing pagination or index. Calibrate by whether a ceiling exists at all:
+  - **No ceiling at all** — a query/load with no `LIMIT`, no pagination, and no streaming (e.g. `q.all()` buffered fully into memory) is a resource-exhaustion finding at **High**, or **Critical** when the OOM can take down a shared worker or an attacker can trigger it on demand. Do not rate this a Medium like an N+1.
+  - **A bound exists but its value is unchecked** — a bound parameter whose *value* is unvalidated and could be arbitrarily large/negative (e.g. `LIMIT ?` fed an unvalidated huge or negative number) is a **Medium** resource-exhaustion finding on its own axis, independent of the injection question.
+  - **NOT a finding**: raising a still-enforced finite cap (e.g. `page_size` `le=100` → `le=500`, still hard-capped, offset/limit intact) is a routine tuning change, not a resource-exhaustion defect — the ceiling still exists and still bounds the load (the carve-out is for a modest, still-reasonable ceiling — not for a bound raised so high that the finite cap itself becomes the practical resource-exhaustion vector).
 
 ## Performance (only when plausibly hot)
 - Accidental quadratic loops; work inside a loop that belongs outside it.
