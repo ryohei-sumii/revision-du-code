@@ -65,3 +65,15 @@ It also triggers from natural language:
 Findings are reported severity-first, each with `file:line`, a one-line defect
 statement, and a concrete failure scenario. A clean diff gets an honest "looks
 good." Files are only edited when you explicitly ask.
+
+## 開発ログ / Development logs
+
+このスキルは AI で自己改善しており、その過程を2つのトラックに記録しています。
+
+This skill is self-improved with AI; the process is recorded in two tracks:
+
+- **品質 / Quality** — recall・precision の測定駆動改善（8ラウンドで収束）:
+  `docs/improvement-log.md`、生データは `docs/rounds/`。
+- **コスト / Cost** — 1回あたりのトークン消費・モデル配分の測定と改善:
+  `docs/cost/cost-log.md`、現状の実測ベースラインは
+  `docs/cost/baseline-token-usage.md`。
