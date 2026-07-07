@@ -42,20 +42,37 @@ changes, tell the user and stop — there is nothing to review.
 
 ## 2. Understand before judging
 
-Read the diff, then **open the surrounding code** for any file with non-trivial
-changes. A hunk in isolation hides its callers, its invariants, and whether an
-edge case is handled elsewhere. Most false-positive review comments come from
-judging a hunk without reading the function it lives in.
+Read the diff, then **open surrounding code where it changes your verdict** — not
+every touched file. Budget roughly **3-4 surrounding-file reads per review**, spent
+on the hunks whose correctness you cannot judge in isolation: a hunk hides its
+callers, its invariants, and whether an edge case is handled elsewhere, and most
+false-positive comments come from judging a hunk without reading the function it
+lives in. Skip the surrounding read for self-contained changes (formatting, local
+refactors, additions with no external contract) — spend the budget where a missed
+read would let a real defect through, not to audit clean hunks.
 
-When a change alters a function or method's signature, return value/type,
-nullability, units, thrown/rejected errors, or side effects, Grep for its call
-sites and read the ones that still use the old contract — an unchanged caller
-relying on it is a bug the diff introduced, not a pre-existing issue (see
-severity-rubric.md's "materially worse" carve-out), and belongs in the review at
-full severity. If the symbol is used pervasively (a core utility, a
-widely-implemented interface), sample a representative few callers across
-different modules rather than reading every occurrence — the goal is to catch the
-realistic break, not to audit the whole codebase.
+Two cases **override the budget** — always spend the read, however many you have
+already used:
+
+- **Contract / signature / guard changes.** When a change alters a function or
+  method's signature, return value/type, nullability, units, thrown/rejected
+  errors, or side effects, Grep for its call sites and read the ones that still use
+  the old contract — an unchanged caller relying on it is a bug the diff
+  introduced, not a pre-existing issue (see severity-rubric.md's "materially worse"
+  carve-out), and belongs in the review at full severity. Likewise, for a suspected
+  missing auth/IDOR or removed guard, Grep for the guard layer before asserting —
+  absence from the diff is not absence from the codebase. If the symbol is used
+  pervasively (a core utility, a widely-implemented interface), sample a
+  representative few callers across different modules rather than reading every
+  occurrence — the goal is to catch the realistic break, not to audit the whole
+  codebase.
+
+- **Concurrency / shared state.** When a change touches goroutines/threads,
+  async/await, locking, channels, or shared mutable state, read the enclosing
+  function and the code that spawns, bounds, or awaits the work — unbounded
+  fan-out, missing timeouts, unawaited work, and races are invisible in the hunk
+  itself and rank at the top of the severity scale, so never let the read budget
+  skip them.
 
 ## 3. What to look for
 
