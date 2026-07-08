@@ -74,6 +74,30 @@ This skill is self-improved with AI; the process is recorded in two tracks:
 
 - **品質 / Quality** — recall・precision の測定駆動改善（8ラウンドで収束）:
   `docs/improvement-log.md`、生データは `docs/rounds/`。
-- **コスト / Cost** — 1回あたりのトークン消費・モデル配分の測定と改善:
-  `docs/cost/cost-log.md`、現状の実測ベースラインは
+- **コスト / Cost** — 1回あたりのトークン消費・モデル配分の測定と改善（5ラウンドで
+  2大レバーを決着）: `docs/cost/cost-log.md`、実測ベースラインは
   `docs/cost/baseline-token-usage.md`。
+
+### 現在の到達点 / Where it landed
+
+両トラックとも、敵対ループが「割に合う変更が見つからない」点で自然停止しました。
+繰り返し現れた教訓は **「機構を足す前に測れ — 単純案がしばしば勝つ」**（フル読込・
+hybrid・難度ルーターはいずれも測定で棄却）。合成フィクスチャ・小標本という限界の上での
+**局所最適**であり、大域最適の証明ではありません。
+
+Both tracks self-terminated where the adversarial loop stopped finding
+worthwhile changes. The recurring lesson: **measure before adding machinery —
+the simpler option often wins** (full-context reads, a hybrid read budget, and
+difficulty-based routing were each rejected by measurement). This is a
+defensible *local* optimum over synthetic, small-sample fixtures — not a proof
+of global optimality.
+
+- **読む範囲 / Read scope:** 差分＋1ホップの呼び出し先/元だけ読む「純予算制」で確定。
+  周辺コードを広く読んでも recall は上がらず（レビューにも lost-in-the-middle）、
+  誤検出がむしろ増えた。/ A pure "diff + one caller/callee hop" budget — reading
+  more surrounding code did not raise recall and inflated false positives.
+- **モデル / Model:** レビューは **Sonnet を既定**（Opus 比 約40%安・品質同等以上）。
+  最安の Haiku は認可・並行・クラッシュ級バグを取りこぼし recall フロアを割る。
+  スキル自体はモデル非依存。/ Default to **Sonnet** for reviews (~40% cheaper than
+  Opus, equal-or-better quality); Haiku drops the recall floor. The skill itself
+  stays model-agnostic.
