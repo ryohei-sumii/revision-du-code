@@ -14,8 +14,9 @@ levels, pick the lower one and say why — over-flagging erodes trust in the rev
 Rules of thumb:
 - A finding is at least **High** only if you can name a concrete input/state/operation
   that produces a wrong result, or that leaks a resource or leaves state inconsistent
-  — a lock not released, a file handle or connection not closed, a missing rollback
-  on a partial failure — even when the symptom only surfaces after repetition or under
+  — a lock not released, a file handle or connection not closed, a heap allocation not
+  freed, a missing rollback on a partial failure — even when the symptom only surfaces
+  after repetition or under
   load. If you can't name such a case, it's a **Question** or a **Nit**.
 - Security, data-loss, and concurrency findings default up a level, not down —
   including ones you can only raise as a Question. Rank a Question about a potential

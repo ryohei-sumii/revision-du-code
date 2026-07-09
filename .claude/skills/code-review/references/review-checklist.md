@@ -13,7 +13,15 @@ don't. Depth beats breadth — a real bug found is worth more than ticking boxes
 
 ## Control flow & errors
 - Errors swallowed, logged-and-continued, or turned into a wrong default.
-- Resources not released on the error path (files, locks, connections, handles).
+- Resources not released on the error path (files, locks, connections, handles, and heap memory).
+- In manual-memory languages (C, C++, unsafe Rust, Zig, Objective-C), check that each
+  owned allocation (`malloc`/`calloc`/`realloc`/`strdup`/`new`) has a matching
+  `free`/`delete` on EVERY exit path. Flag only when you can name the leaking path — a
+  pointer reassigned or a struct field overwritten without freeing the previous
+  allocation, an early return/`goto` that skips the cleanup label, or a struct whose
+  `free`/destroy function omits a heap member it owns. Before asserting, READ the
+  cleanup/destructor and the caller: if the caller takes ownership or a
+  scope-exit/`defer`/cleanup frees it, drop the finding.
 - Partial state left behind when an operation fails midway (no rollback).
 - `try/catch` too broad, hiding failures it shouldn't.
 
