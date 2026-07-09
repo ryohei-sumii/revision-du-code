@@ -486,6 +486,28 @@ diagnose(Opus)は「妥当な設計判断を欠陥報告しない」carve-out �
 
 ---
 
+## 現場検証 / Field Validation (Round 1 — 実 OSS gin)
+
+合成でない**実リポジトリ**での初の検証（詳細は `docs/field/round-1-gin.md`）。`gin-gonic/gin` の実際の bug-fix
+コミットを**逆適用**して"バグ再注入差分"を作り、**本物のスキルを読ませた Sonnet 既定構成**でレビュー。正解＝現実の
+landed fix。合成の限界（合成≠実・採点者が LLM・仕込みバグは易しい）を閉じる狙い。
+
+- **結果:** 実バグ **12/12 検出（per-run も majority も 1.00）**、全クラス（crash/nil/concurrency/contract/security/
+  error-handling/correctness）、**クリーン差分の誤報 0/5**。敵対ゲートが生 diff を独立再読して**採点の水増しなしを確認**
+  （`judging-sound`）。判定 = **`assistant-ready-with-caveats`**。スキル変更なし（現場性能の測定）。
+- **学び:**
+  1. **"実用に耐える"は3つの別主張——今回は1つ目を強く実証した。** 「実コードの既知バグ回帰を捕まえる」≠「新規の
+     組織的バグを見つける」≠「危なく見える正しい差分で黙る」。実 OSS 12/12・誤報0・敵対通過は合成では得られない前進
+     だが、**汎用 recall 保証ではない**。
+  2. **良い field テストは"正解"の設計が9割。** landed-fix を正解に使い（＋テスト hunk 除去）、敵対ゲートが生 diff を
+     独立再読することで、**LLM 採点でも客観に近い**測定になった。
+  3. **次の最大の未測定軸は precision——"実質的だが正しい"リファクタでの誤報。** 今回の 0/5 は自明 benign（docs/typo/
+     version）限定。FP 疲れ＝採用可否を決めるのは"危なく見えるが正しい大改修"での誤報で、それは未測定。
+  4. **severity 較正は要監視。** High の nil-handler panic を 2/3 run が低 severity に誤格下げ（検出はできた）。
+     自律ゲートには「検出＝十分」でない。n=1 のためスキルは変えず監視対象に。
+
+---
+
 ## 4. 用語ミニ辞典 / Glossary
 
 - **Recall（再現率）** … 存在する問題のうち拾えた割合。高い＝見逃しが少ない。
