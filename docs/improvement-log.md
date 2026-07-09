@@ -528,6 +528,31 @@ security 13件（正解=正しい）＋隠し実バグ4件を、本物のスキ�
 `assistant-ready-with-caveats`（人間トリアージ前提のアシスタントとして実運用可）。残 caveat は外部妥当性（多言語・
 大差分・非リプレイ・severity 較正）で、precision/recall の欠陥ではない。
 
+### Field Round 3 — 多言語（Python requests ＋ JS axios）
+
+Round 1/2 が残した最大 caveat＝「単一言語（Go/gin）」を、別言語の実 OSS で検証（詳細
+`docs/field/round-3-multilang.md`）。同一手法（bug-fix 逆適用＝recall／マージ済み実変更＝precision）を
+Python `requests`・JS `axios` に適用。**スキル変更なし**。
+
+- **結果:** Python recall 0.87（majority 4/5・唯一の miss は `__getattr__` duck-typing の本質的難所）、JS 実質
+  **15/15=1.00**（生 0.83 は退化フィクスチャ1件のため）。precision は JS がよく標本化されクリーン（clean 0.92・FP 0.08）、
+  Python は n=1 で薄いが再び **Critical 潜在バグ（共有 SSLContext）を検出**。敵対ゲート `generalizes`。判定
+  `assistant-ready-with-caveats`。
+- **学び:**
+  1. **コア挙動（実バグ回帰を捕え・正しいリファクタで黙る）が Go/Python/JS の3言語で再現。** 単一言語 caveat は
+     実質的に弱まった。
+  2. **ただし"言語×リポ"の交絡は未解決**——各言語1リポ（全て成熟 HTTP ライブラリ）。caveat は消えず性質が変わっただけ。
+     過信は禁物（caveat を「単一言語」→「3言語だが各1ライブラリ・Python 標本薄」に格下げ）。
+  3. **"マージ済み≠バグ無し"が別言語でも再現**（requests の"正しい"perf commit で Critical 潜在バグ 3/3）。organic
+     バグ発見の追加証拠＋正解汚染の言語横断性。
+  4. **方法論: fixture の質が数字を左右する。** 挙動不変の退化フィクスチャ1件が JS recall を 1.00→0.83 に見せた。
+     → 逆適用差分が**本当に挙動を変えるか**の fixture QA を今後入れる。Python の duck-typing miss は n=1・本質的難所の
+     ため監視のみ（スキル不変）。
+
+**Field 到達点（3ラウンド）:** ①実害バグ検出 ②正しい変更でノイズを撒かない ③organic バグ発見 を **3言語**（Go/
+Python/JS）で実証。残 caveat は「各言語1ライブラリ・Python 標本薄・大差分/非ライブラリ未検証・severity 較正」＝
+カバレッジであり、precision/recall の欠陥ではない。
+
 ---
 
 ## 4. 用語ミニ辞典 / Glossary

@@ -77,6 +77,9 @@ This skill is self-improved with AI; the process is recorded in two tracks:
 - **コスト / Cost** — 1回あたりのトークン消費・モデル配分の測定と改善（5ラウンドで
   2大レバーを決着）: `docs/cost/cost-log.md`、実測ベースラインは
   `docs/cost/baseline-token-usage.md`。
+- **現場検証 / Field** — 合成でない実 OSS（Go/gin, Python/requests, JS/axios）で、
+  実際の bug-fix を逆適用した回帰の検出（recall）と、正しい実変更での誤報（precision）を
+  実測: `docs/field/`。3言語で「実害バグを検出し、正しい変更で黙る」プロファイルを実証。
 
 ### 現在の到達点 / Where it landed
 
