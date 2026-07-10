@@ -553,6 +553,27 @@ Python `requests`・JS `axios` に適用。**スキル変更なし**。
 Python/JS）で実証。残 caveat は「各言語1ライブラリ・Python 標本薄・大差分/非ライブラリ未検証・severity 較正」＝
 カバレッジであり、precision/recall の欠陥ではない。
 
+### Field Round 4 — Rust ＋ 非ライブラリ（ripgrep CLI）
+
+Round 3 が残した2 caveat（未検証言語・ライブラリ限定）を同時に叩く（詳細 `docs/field/round-4-rust-ripgrep.md`）。
+Rust 製 CLI `ripgrep` に同一手法。**スキル変更なし**。
+
+- **結果:** recall 0.90（**majority 7/7**・crash/correctness/regex/**memory-refcycle**/escaping）、confident FP **0/12**、
+  clean 0.67（非 clean は自己申告 Nit のみ）。**Arc vs Weak 参照循環**を検出＝Rust 固有の所有権推論。判定
+  `assistant-ready-with-caveats`（敵対ゲートは agent エラーで null、assess が自己批判的に代替）。
+- **学び:**
+  1. **4言語目で"未検証言語"caveat がクローズ。** Go/Python/JS/Rust でコア挙動が一貫。Rust 固有推論（Arc/Weak・スライス
+     panic）まで通用＝元3言語への過学習でない証拠。
+  2. **"アプリ"caveat は看板倒れになりうる。** ripgrep は CLI だがバグ表面は library 級 crate で例外的に高テスト。
+     → 「非ライブラリ」から「**雑然/低テストのアプリ未検証**」へ caveat を精密化（消えていない・FP が最も出る領域）。
+  3. **replay の易しさは recall を過大評価する。** 既知修正の逆適用は novel バグより局所的で易しい。field recall は上振れと読む。
+  4. **前ラウンドの保留2件を解消:** requests 共有 SSLContext 指摘は本物（=2.32.0 #6667 の実 SSL 回帰）→ Python 0-FP 保持。
+     escaping fixture の dir タイポは判定に非汚染（DIFF＋指摘から正しく caught 3/3）。
+
+**Field 到達点（4ラウンド・4言語）:** ①実害バグ検出 ②正しい変更でノイズを撒かない ③organic バグ発見 を Go/Python/JS/
+Rust で実証。総合 `assistant-ready-with-caveats`。残 caveat は「各言語1リポ・**雑然/低テストの本物のアプリ未検証**・
+replay≤novel・大差分・severity 較正」＝カバレッジで、精度/再現率の欠陥ではない。
+
 ---
 
 ## 4. 用語ミニ辞典 / Glossary
