@@ -77,9 +77,11 @@ This skill is self-improved with AI; the process is recorded in two tracks:
 - **コスト / Cost** — 1回あたりのトークン消費・モデル配分の測定と改善（5ラウンドで
   2大レバーを決着）: `docs/cost/cost-log.md`、実測ベースラインは
   `docs/cost/baseline-token-usage.md`。
-- **現場検証 / Field** — 合成でない実 OSS（Go/gin, Python/requests, JS/axios, Rust/ripgrep）で、
-  実際の bug-fix を逆適用した回帰の検出（recall）と、正しい実変更での誤報（precision）を
-  実測: `docs/field/`。**4言語**で「実害バグを検出し、正しい変更で黙る」プロファイルを実証。
+- **現場検証 / Field** — 合成でない実 OSS（Go/gin, Python/requests, JS/axios, Rust/ripgrep,
+  Go/pocketbase）で、実際の bug-fix を逆適用した回帰の検出（recall）と、正しい実変更での
+  誤報（precision）を実測: `docs/field/`。**信頼境界の地図**: 構造・crash・並行・error-handling・
+  契約バグは4言語・lib もアプリも信頼できる一方、**認証/権限の業務ルール意味論では劣化を確認
+  （誤報も見逃しも出る）**——そこは人間が重点レビュー。総合 `assistant-ready-with-caveats`。
 
 ### 現在の到達点 / Where it landed
 
